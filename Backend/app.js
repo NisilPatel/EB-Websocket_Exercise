@@ -14,14 +14,25 @@ const server = http.createServer(app);
 const io = socketIo(server);
 
 let interval;
-let JSONTestList = [{id:2, word:"Nisil"}, {id:1, word:"Mike"}, {id:4, word:"Nisil"}, {id:1, word:"JSON"} ]
+let empty = false;
+
+//Added more objects with id between 1 and 10
+let JSONTestList = [{id:2, word:"Nisil"}, {id:1, word:"Mike"}, {id:4, word:"Nisil"}, {id:1, word:"JSON"} ];
 
 io.on("connection", (socket) => {
   console.log("New client connected");
 
-  socket.on('requestJSON',function (data) {
-    getJSONAndEmit(socket)
-  });
+ 
+  if (interval) {
+    clearInterval(interval);
+  }
+  interval = setInterval(() => {
+    if(empty == false){
+      getJSONAndEmit(socket);
+    }
+  }, 5000);
+  
+
   socket.on("disconnect", () => {
     console.log("Client disconnected");
     clearInterval(interval);
@@ -31,14 +42,15 @@ io.on("connection", (socket) => {
 const getJSONAndEmit = socket => {
   let response;
   if(JSONTestList.length == 0){
-    response = {id:11, word:""};
+    empty = true;
+    response = {id:5,word:"finished"};
   }
   else{
     response = JSONTestList[JSONTestList.length-1];
     JSONTestList.pop();
   }
   
-  // Emitting a new message. Will be consumed by the client
+  console.log("Emiting data", response);
   socket.emit("FromJSON", response);
 };
 
